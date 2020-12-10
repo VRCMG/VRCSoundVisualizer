@@ -14,11 +14,11 @@ namespace VRCSoundVisualizer
         {
             // Camera Bloop Patch
             harmony.Patch(AccessTools.Method(typeof(UserCameraIndicator), "TimerBloop"),
-                new HarmonyMethod(SymbolExtensions.GetMethodInfo((Player __0) => OnCameraBloop(__0))));
+                new HarmonyMethod(SymbolExtensions.GetMethodInfo((UserCameraIndicator __instance) => OnCameraBloop(__instance))));
             
             // Camera Shutter Patch
             harmony.Patch(AccessTools.Method(typeof(UserCameraIndicator), "PhotoCapture"),
-                new HarmonyMethod(SymbolExtensions.GetMethodInfo((Player __0) => OnCameraShutter(__0))));
+                new HarmonyMethod(SymbolExtensions.GetMethodInfo((UserCameraIndicator __instance) => OnCameraShutter(__instance))));
         }
         
         private enum CameraColorStates
@@ -35,22 +35,36 @@ namespace VRCSoundVisualizer
             {CameraColorStates.Green, new Color(0.0f, 1.0f, 0.0f, 0.9f)}
         };
 
-        private static void OnCameraBloop(Player __0)
+        private static Material GetCameraLensMaterial(UserCameraIndicator __instance)
         {
-            var indicatorMat = __0?.prop_VRCPlayer_0?.userCameraIndicator?.transform
-                ?.FindChild("RemoteShape/camera_lens_mesh/lens_focus1")?.GetComponent<MeshRenderer>()?.material;
+            Material indicatorMaterial;
+            
+            if (__instance.field_Private_Boolean_1)
+                indicatorMaterial = GameObject
+                    .Find("/_Application/TrackingVolume/PlayerObjects/UserCamera/PhotoCamera/camera_lens_mesh/lens_focus1")
+                    .GetComponent<MeshRenderer>().material;
+            else
+                indicatorMaterial = __instance?.transform
+                    ?.FindChild("RemoteShape/camera_lens_mesh/lens_focus1")?.GetComponent<MeshRenderer>()?.material;
 
-            if (indicatorMat != null)
-                MelonCoroutines.Start(FlashCameraColor(indicatorMat, CameraColorStates.Amber, 0.4f));
+            if (indicatorMaterial != null)
+                return indicatorMaterial;
+            else
+                return null;
         }
 
-        private static void OnCameraShutter(Player __0)
+        private static void OnCameraBloop(UserCameraIndicator __instance)
         {
-            var indicatorMat = __0?.prop_VRCPlayer_0?.userCameraIndicator?.transform
-                ?.FindChild("RemoteShape/camera_lens_mesh/lens_focus1")?.GetComponent<MeshRenderer>()?.material;
-            
-            if (indicatorMat != null)
-                MelonCoroutines.Start(FlashCameraColor(indicatorMat, CameraColorStates.Green, 0.25f));
+            var lensMaterial = GetCameraLensMaterial(__instance);
+            if (lensMaterial != null)
+                MelonCoroutines.Start(FlashCameraColor(lensMaterial, CameraColorStates.Amber, 0.25f));
+        }
+
+        private static void OnCameraShutter(UserCameraIndicator __instance)
+        {
+            var lensMaterial = GetCameraLensMaterial(__instance);
+            if (lensMaterial != null)
+                MelonCoroutines.Start(FlashCameraColor(lensMaterial, CameraColorStates.Green, 0.4f));
         }
 
         private static IEnumerator FlashCameraColor(Material mat, CameraColorStates color, float durationInSeconds)

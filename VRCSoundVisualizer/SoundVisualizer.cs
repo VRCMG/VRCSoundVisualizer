@@ -14,13 +14,5 @@ namespace VRCSoundVisualizer
         {
             Hooking.SetupAllHooks();
         }
-
-        public override void OnUpdate()
-        {
-            if (Input.GetKeyDown(KeyCode.H))
-                VRCPlayer.field_Internal_Static_VRCPlayer_0.userCameraIndicator.TimerBloop(Player.prop_Player_0);
-            if (Input.GetKeyDown(KeyCode.J))
-                VRCPlayer.field_Internal_Static_VRCPlayer_0.userCameraIndicator.PhotoCapture(Player.prop_Player_0);
-        }
     }
 }
